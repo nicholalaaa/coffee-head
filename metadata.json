@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Coffee Head (咖啡脑袋)",
+  "description": "A high-end, aesthetic personal coffee companion for tracking intake, managing bean inventory, controlling budgets, and visualizing flavor footprints with warm minimalism.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
