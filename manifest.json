@@ -2,19 +2,21 @@
   "name": "咖啡脑袋 (Coffee Head)",
   "short_name": "Coffee Head",
   "description": "Your aesthetic coffee companion for tracking and brewing.",
-  "start_url": "./index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F2ED",
   "theme_color": "#F5F2ED",
+  "scope": "/",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "/icon.svg",
       "type": "image/svg+xml",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any"
     },
     {
-      "src": "icon.svg",
+      "src": "/icon.svg",
       "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "maskable"

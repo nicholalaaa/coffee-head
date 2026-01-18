@@ -1,14 +1,17 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Register Service Worker
+// Register Service Worker with absolute path
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(registration => console.log('SW registered'))
-      .catch(err => console.log('SW reg failed', err));
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('SW registered: ', registration.scope);
+      })
+      .catch(err => {
+        console.log('SW reg failed: ', err);
+      });
   });
 }
 
