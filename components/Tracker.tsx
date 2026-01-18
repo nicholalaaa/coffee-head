@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CoffeeLog, CoffeeMode, Brand, CoffeeBean, UserProfile } from '../types';
@@ -133,7 +132,6 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
     return beans.filter(b => b.hasBeenOpened && !b.isArchived);
   }, [beans]);
 
-  // Handle price/caffeine calculation overrides
   useEffect(() => {
     if (activeForm && !editingLogId) {
       if (activeForm.mode === CoffeeMode.BRAND) {
@@ -266,7 +264,6 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-20">
-      {/* 1. Metabolism Curve Section */}
       <section className={`bg-white rounded-[40px] p-6 shadow-xl border relative overflow-hidden transition-all duration-500 ${limitStatus === 'over' ? 'border-red-500 ring-2 ring-red-500/20' : 'border-[#E5E2DD]'}`}>
         <div className="flex justify-between items-start relative z-10 mb-2">
           <div className={`${limitStatus === 'over' ? 'animate-bounce' : ''}`}>
@@ -316,10 +313,14 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
                   <stop offset="95%" stopColor={limitStatus === 'over' ? "#ef4444" : "#D4A373"} stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={(props) => {
+              <XAxis dataKey="time" axisLine={false} tickLine={false} tick={(props: any) => {
                 const { x, y, payload, index } = props;
-                if (!chartData[index].showLabel) return null;
-                return <text x={x} y={y + 12} fill="#3C2A21" fillOpacity={0.3} fontSize={8} fontWeight="bold" textAnchor="middle">{payload.value}</text>;
+                if (!chartData[index].showLabel) return <g />;
+                return (
+                  <text x={x} y={y + 12} fill="#3C2A21" fillOpacity={0.3} fontSize={8} fontWeight="bold" textAnchor="middle">
+                    {payload.value}
+                  </text>
+                );
               }} interval={0} />
               <ReferenceLine y={SLEEP_THRESHOLD} stroke="#D4A373" strokeDasharray="3 3" strokeOpacity={0.5} />
               <Area 
@@ -337,7 +338,6 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
         </div>
       </section>
 
-      {/* 2. Journaling Quick Entry */}
       <div className="px-2">
         <div className="relative group">
           <textarea 
@@ -352,13 +352,11 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
         </div>
       </div>
 
-      {/* 3. Mode Select */}
       <div className="flex bg-[#E5E2DD]/40 p-1.5 rounded-[32px] gap-2 mx-2">
         <button onClick={() => setMode(CoffeeMode.BRAND)} className={`flex-1 py-4 rounded-[26px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${mode === CoffeeMode.BRAND ? 'bg-white shadow-lg text-[#3C2A21]' : 'text-[#3C2A21]/40'}`}><ShoppingBag size={14} /> Brand/Cafe</button>
         <button onClick={() => setMode(CoffeeMode.HOME)} className={`flex-1 py-4 rounded-[26px] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${mode === CoffeeMode.HOME ? 'bg-white shadow-lg text-[#3C2A21]' : 'text-[#3C2A21]/40'}`}><CoffeeIcon size={14} /> Home-made</button>
       </div>
 
-      {/* 4. Choice Grid */}
       <section className="space-y-4 px-2">
         {mode === CoffeeMode.BRAND ? (
           <div className="grid grid-cols-3 gap-4">
@@ -411,7 +409,6 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
         )}
       </section>
 
-      {/* 5. Today's History */}
       <section className="pt-4 px-2">
         <div className="flex items-center justify-between mb-4 px-2">
           <h3 className="serif text-xl font-bold flex items-center gap-2"><HistoryIcon size={20} className="text-[#D4A373]" /> History</h3>
@@ -465,7 +462,6 @@ const Tracker: React.FC<TrackerProps> = ({ logs, beans, profile, onAddLog, onDel
         </div>
       </section>
 
-      {/* Brand Selection Sheet */}
       <AnimatePresence>
         {selectedBrand && mode === CoffeeMode.BRAND && (
           <>
