@@ -18,7 +18,10 @@ import {
   Sparkles,
   Download,
   Database,
-  Loader2
+  Loader2,
+  User as UserIcon,
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import Tracker from './components/Tracker';
 import Warehouse from './components/Warehouse';
@@ -32,7 +35,6 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'tracker' | 'warehouse' | 'wallet' | 'dashboard'>('tracker');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   const [logs, setLogs] = useState<CoffeeLog[]>([]);
   const [beans, setBeans] = useState<CoffeeBean[]>([]);
@@ -79,7 +81,7 @@ const App: React.FC = () => {
 
   // Sync Data to IndexedDB on changes
   useEffect(() => {
-    if (isInitialLoading) return; // Prevent overwriting DB with initial state
+    if (isInitialLoading) return; 
     const saveData = async () => {
       await db.set('coffee_logs', logs);
       await db.set('coffee_beans', beans);
@@ -89,12 +91,25 @@ const App: React.FC = () => {
     saveData();
   }, [logs, beans, userStats, profile, isInitialLoading]);
 
+  // SMART RECOMMENDATION LOGIC
   const recommendedLimit = useMemo(() => {
-    let base = profile.weight * 5;
-    if (profile.sleepDifficulty === 'Hard') base *= 0.7;
+    // Basic metabolic formula: Weight-based baseline
+    let base = profile.weight * 5; 
+    
+    // Sensitivity adjustments
+    if (profile.sleepDifficulty === 'Hard') base *= 0.65;
     if (profile.sleepDifficulty === 'Normal') base *= 0.85;
-    return Math.round(Math.min(Math.max(base, 50), 600));
-  }, [profile.weight, profile.sleepDifficulty]);
+    
+    // Height factor (minor metabolism surface area adjustment)
+    const heightFactor = profile.height / 170;
+    base *= heightFactor;
+
+    return Math.round(Math.min(Math.max(base, 100), 600));
+  }, [profile.weight, profile.height, profile.sleepDifficulty]);
+
+  const applyRecommendedLimit = () => {
+    setProfile(prev => ({ ...prev, dailyLimit: recommendedLimit }));
+  };
 
   const addLog = (log: CoffeeLog) => {
     setLogs(prev => [log, ...prev]);
@@ -129,7 +144,7 @@ const App: React.FC = () => {
     a.href = url;
     a.download = `coffee-head-backup-${new Date().toLocaleDateString()}.json`;
     a.click();
-    alert('Backup generated. Save it to iCloud or a notes app.');
+    alert('Backup generated.');
   };
 
   const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,11 +209,11 @@ const App: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="serif text-3xl font-bold tracking-tight text-[#3C2A21]">Coffee Head</h1>
-            <p className="text-xs uppercase tracking-widest text-[#D4A373] mt-1 font-semibold">{profile.name} · 咖啡脑袋</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-[#D4A373] mt-1 font-black">{profile.name || 'Coffee Lover'}</p>
           </div>
-          <button onClick={() => setIsProfileOpen(true)} className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center border border-[#E5E2DD] active:scale-95 transition-transform overflow-hidden group">
+          <button onClick={() => setIsProfileOpen(true)} className="w-14 h-14 rounded-[22px] bg-white shadow-sm flex items-center justify-center border border-[#E5E2DD] active:scale-95 transition-transform overflow-hidden group">
             <div className="w-full h-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              {renderAvatar(profile.avatar, 24, "text-[#3C2A21]")}
+              {renderAvatar(profile.avatar, 28, "text-[#3C2A21]")}
             </div>
           </button>
         </div>
@@ -219,14 +234,43 @@ const App: React.FC = () => {
         {isProfileOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsProfileOpen(false)} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]" />
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 z-[110] p-8 bg-[#F5F2ED] rounded-t-[48px] shadow-2xl border-t border-[#E5E2DD] max-w-md mx-auto max-h-[90vh] overflow-y-auto no-scrollbar">
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="fixed bottom-0 left-0 right-0 z-[110] p-8 bg-[#F5F2ED] rounded-t-[48px] shadow-2xl border-t border-[#E5E2DD] max-w-md mx-auto max-h-[95vh] overflow-y-auto no-scrollbar">
               <div className="w-12 h-1.5 bg-[#E5E2DD] rounded-full mx-auto mb-8" />
               <div className="flex justify-between items-center mb-8">
-                <h3 className="serif text-2xl font-bold text-[#3C2A21]">Profile Settings</h3>
+                <h3 className="serif text-2xl font-bold text-[#3C2A21]">User Persona</h3>
                 <button onClick={() => setIsProfileOpen(false)} className="p-3 bg-white rounded-full text-[#3C2A21]/20"><X size={20} /></button>
               </div>
 
               <div className="space-y-8 pb-12">
+                {/* Avatar Selection */}
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2">Select Avatar</label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {DEFAULT_AVATARS.map((av) => (
+                      <button 
+                        key={av.id} 
+                        onClick={() => setProfile({ ...profile, avatar: av.id })}
+                        className={`aspect-square rounded-2xl flex items-center justify-center transition-all ${profile.avatar === av.id ? 'bg-[#3C2A21] text-white shadow-lg scale-110' : 'bg-white text-[#3C2A21]/40 border border-[#E5E2DD]'}`}
+                      >
+                        <av.icon size={20} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Identity */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2">Display Name</label>
+                  <input 
+                    type="text" 
+                    value={profile.name} 
+                    onChange={e => setProfile({...profile, name: e.target.value})} 
+                    placeholder="Who are you?"
+                    className="w-full bg-white rounded-[24px] p-5 text-sm font-bold shadow-sm focus:ring-2 focus:ring-[#D4A373] focus:outline-none" 
+                  />
+                </div>
+
+                {/* Body Stats & Sensitivity */}
                 <div className="bg-white rounded-[32px] p-6 shadow-sm space-y-6">
                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -240,13 +284,44 @@ const App: React.FC = () => {
                    </div>
 
                    <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2 flex items-center gap-1"><MoonStar size={12} /> Sleep Difficulty</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2 flex items-center gap-1"><MoonStar size={12} /> Caffeine Sensitivity</label>
                       <div className="flex bg-[#F5F2ED] p-1 rounded-[20px] gap-1">
                         {(['Easy', 'Normal', 'Hard'] as SleepDifficulty[]).map(level => (
                            <button key={level} onClick={() => setProfile({...profile, sleepDifficulty: level})} className={`flex-1 py-3 rounded-2xl text-[10px] font-black uppercase transition-all ${profile.sleepDifficulty === level ? 'bg-[#3C2A21] text-white shadow-md' : 'text-[#3C2A21]/40'}`}>{level}</button>
                         ))}
                       </div>
                    </div>
+                </div>
+
+                {/* Smart Limit Section */}
+                <div className="bg-[#3C2A21] rounded-[32px] p-8 text-white relative overflow-hidden">
+                   <div className="absolute -top-4 -right-4 text-white/5"><Zap size={100} /></div>
+                   <div className="relative z-10 flex items-start justify-between">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-[#D4A373]">Smart Recommendation</p>
+                        <h4 className="text-4xl font-black mt-2">{recommendedLimit}<span className="text-sm opacity-40 ml-1 uppercase">mg</span></h4>
+                      </div>
+                      <button 
+                        onClick={applyRecommendedLimit}
+                        className="bg-[#D4A373] text-[#3C2A21] p-3 rounded-2xl shadow-lg active:scale-95 transition-all"
+                      >
+                        <Check size={24} />
+                      </button>
+                   </div>
+                   <div className="mt-4 flex items-center gap-2 text-[10px] font-bold opacity-60">
+                      <Info size={12} />
+                      <span>Based on your weight, height and metabolism type.</span>
+                   </div>
+                </div>
+
+                <div className="space-y-2 px-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2">Manual Daily Limit (mg)</label>
+                  <input 
+                    type="number" 
+                    value={profile.dailyLimit} 
+                    onChange={e => setProfile({...profile, dailyLimit: Number(e.target.value)})} 
+                    className="w-full bg-white rounded-[24px] p-5 text-sm font-black text-[#D4A373] shadow-sm focus:ring-2 focus:ring-[#D4A373] focus:outline-none" 
+                  />
                 </div>
 
                 <div className="space-y-4">
@@ -263,7 +338,6 @@ const App: React.FC = () => {
                            <input type="file" accept=".json" onChange={importData} className="hidden" />
                         </label>
                      </div>
-                     <p className="text-[9px] text-[#3C2A21]/40 font-bold px-2 italic text-center">Using IndexedDB for stability. Export and save to iCloud to be 100% safe.</p>
                   </div>
                 </div>
 
