@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CoffeeBean, FreshnessState } from '../types';
 import { COFFEE_ORIGIN_LIST } from '../constants';
 import { 
-  Camera, 
+  Plus,
   Trash2, 
   Archive, 
   CheckCircle2, 
@@ -22,7 +22,8 @@ import {
   Image as ImageIcon,
   UploadCloud,
   Scissors,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardList
 } from 'lucide-react';
 
 interface WarehouseProps {
@@ -33,8 +34,8 @@ interface WarehouseProps {
 }
 
 const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, onDeleteBean }) => {
-  const [showScanner, setShowScanner] = useState(false);
   const [editingBean, setEditingBean] = useState<CoffeeBean | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [rippingId, setRippingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,27 +47,36 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
     return FreshnessState.STALE;
   };
 
-  const simulateScan = () => {
-    const mockBean: CoffeeBean = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: 'Yirgacheffe G1',
+  const handleAddNew = () => {
+    const newBeanTemplate: CoffeeBean = {
+      id: '', // Will be generated on save
+      name: '',
       origin: 'Ethiopia',
-      roastDate: new Date(Date.now() - 3 * 86400000).toISOString(),
+      roastDate: new Date().toISOString(),
       totalWeight: 250,
       currentWeight: 250,
-      price: 128,
-      flavorProfile: ['Citrus', 'Floral', 'Jasmine'],
+      price: 0,
+      flavorProfile: [],
       isArchived: false,
       hasBeenOpened: false
     };
-    onAddBean(mockBean);
-    setShowScanner(false);
+    setEditingBean(newBeanTemplate);
+    setIsAdding(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSave = () => {
     if (editingBean) {
-      onUpdateBean(editingBean.id, editingBean);
+      if (isAdding) {
+        const newBean = {
+          ...editingBean,
+          id: Math.random().toString(36).substr(2, 9)
+        };
+        onAddBean(newBean);
+      } else {
+        onUpdateBean(editingBean.id, editingBean);
+      }
       setEditingBean(null);
+      setIsAdding(false);
     }
   };
 
@@ -101,7 +111,6 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
 
   const activeBeans = beans.filter(b => !b.isArchived);
   
-  // Group archived beans by variety name
   const groupedArchivedBeans = useMemo(() => {
     const archived = beans.filter(b => b.isArchived);
     const groups: Record<string, { bean: CoffeeBean; count: number }> = {};
@@ -110,7 +119,6 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
       const nameKey = bean.name.trim().toLowerCase();
       if (groups[nameKey]) {
         groups[nameKey].count += 1;
-        // Prefer the version with an image for the display
         if (!groups[nameKey].bean.imageUrl && bean.imageUrl) {
           groups[nameKey].bean = bean;
         }
@@ -138,33 +146,14 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
       <div className="flex justify-between items-center px-2">
         <h2 className="serif text-2xl font-bold text-[#3C2A21]">Warehouse</h2>
         <button 
-          onClick={() => setShowScanner(true)}
+          onClick={handleAddNew}
           className="bg-[#3C2A21] text-white px-6 py-3 rounded-[24px] flex items-center gap-2 font-bold text-sm shadow-xl active:scale-95 transition-all"
         >
-          <Camera size={18} /> Scan Label
+          <Plus size={18} /> Add Bean
         </button>
       </div>
 
       <AnimatePresence>
-        {showScanner && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center p-8"
-          >
-            <div className="bg-[#F5F2ED] w-full max-w-xs rounded-[40px] p-8 text-center space-y-6">
-              <div className="w-48 h-48 mx-auto border-4 border-dashed border-[#D4A373] rounded-3xl flex items-center justify-center text-[#D4A373]/30">
-                <Camera size={48} />
-              </div>
-              <h3 className="serif text-2xl font-bold text-[#3C2A21]">AI OCR Scanner</h3>
-              <p className="text-sm text-[#3C2A21]/60">Point at labels to extract coffee DNA.</p>
-              <div className="flex flex-col gap-3">
-                <button onClick={simulateScan} className="bg-[#D4A373] text-white py-4 rounded-2xl font-bold shadow-lg">Simulate Extract</button>
-                <button onClick={() => setShowScanner(false)} className="text-[#3C2A21]/40 font-bold uppercase text-xs">Cancel</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {deletingId && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -211,11 +200,14 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#3C2A21]">
-                    <Edit3 size={20} />
+                    {isAdding ? <ClipboardList size={20} /> : <Edit3 size={20} />}
                   </div>
-                  <h3 className="serif text-2xl font-bold">Edit Bean Info</h3>
+                  <h3 className="serif text-2xl font-bold">{isAdding ? 'New Bean Arrival' : 'Edit Bean Info'}</h3>
                 </div>
-                <button onClick={() => setEditingBean(null)} className="p-3 bg-white rounded-full text-[#3C2A21]/20 hover:text-[#3C2A21]/40">
+                <button 
+                  onClick={() => { setEditingBean(null); setIsAdding(false); }} 
+                  className="p-3 bg-white rounded-full text-[#3C2A21]/20 hover:text-[#3C2A21]/40"
+                >
                   <X size={20} />
                 </button>
               </div>
@@ -234,7 +226,7 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
                      ) : (
                        <div className="text-center space-y-1">
                          <UploadCloud size={32} className="mx-auto text-[#E5E2DD] group-hover:text-[#D4A373]" />
-                         <span className="block text-[8px] font-bold text-[#3C2A21]/30">Capture Bag Photo</span>
+                         <span className="block text-[8px] font-bold text-[#3C2A21]/30">Upload Bag Photo</span>
                        </div>
                      )}
                    </div>
@@ -244,7 +236,13 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40 px-2">Bean Name</label>
-                    <input type="text" value={editingBean.name} onChange={e => setEditingBean({...editingBean, name: e.target.value})} className="w-full bg-white rounded-[24px] p-5 text-sm font-bold shadow-sm focus:ring-2 focus:ring-[#D4A373] focus:outline-none" />
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Ethiopia Yirgacheffe"
+                      value={editingBean.name} 
+                      onChange={e => setEditingBean({...editingBean, name: e.target.value})} 
+                      className="w-full bg-white rounded-[24px] p-5 text-sm font-bold shadow-sm focus:ring-2 focus:ring-[#D4A373] focus:outline-none" 
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -279,25 +277,31 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
                     <input type="range" min="0" max={editingBean.totalWeight} step="1" value={editingBean.currentWeight} onChange={e => setEditingBean({...editingBean, currentWeight: Number(e.target.value)})} className="w-full accent-[#3C2A21] h-2 bg-white rounded-lg appearance-none cursor-pointer" />
                   </div>
 
-                  <div className="flex gap-4 p-4 bg-[#FDFBF7] rounded-[24px] border border-[#E5E2DD]">
-                    <div className="flex-1">
-                      <span className="block text-[8px] font-black uppercase tracking-widest text-[#3C2A21]/30 mb-1">Status Control</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setEditingBean({...editingBean, isArchived: !editingBean.isArchived})} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${editingBean.isArchived ? 'bg-amber-100 text-amber-700 shadow-sm' : 'bg-white text-[#3C2A21]/40 border border-[#E5E2DD]'}`}>
-                          {editingBean.isArchived ? 'Archived' : 'Active'}
-                        </button>
-                        <button onClick={() => setEditingBean({...editingBean, hasBeenOpened: !editingBean.hasBeenOpened})} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${editingBean.hasBeenOpened ? 'bg-green-100 text-green-700 shadow-sm' : 'bg-white text-[#3C2A21]/40 border border-[#E5E2DD]'}`}>
-                          {editingBean.hasBeenOpened ? 'Opened' : 'Sealed'}
-                        </button>
+                  {!isAdding && (
+                    <div className="flex gap-4 p-4 bg-[#FDFBF7] rounded-[24px] border border-[#E5E2DD]">
+                      <div className="flex-1">
+                        <span className="block text-[8px] font-black uppercase tracking-widest text-[#3C2A21]/30 mb-1">Status Control</span>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => setEditingBean({...editingBean, isArchived: !editingBean.isArchived})} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${editingBean.isArchived ? 'bg-amber-100 text-amber-700 shadow-sm' : 'bg-white text-[#3C2A21]/40 border border-[#E5E2DD]'}`}>
+                            {editingBean.isArchived ? 'Archived' : 'Active'}
+                          </button>
+                          <button onClick={() => setEditingBean({...editingBean, hasBeenOpened: !editingBean.hasBeenOpened})} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${editingBean.hasBeenOpened ? 'bg-green-100 text-green-700 shadow-sm' : 'bg-white text-[#3C2A21]/40 border border-[#E5E2DD]'}`}>
+                            {editingBean.hasBeenOpened ? 'Opened' : 'Sealed'}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
               <div className="pt-4 sticky bottom-0 bg-[#F5F2ED] pb-4">
-                <button onClick={handleSaveEdit} className="w-full bg-[#3C2A21] text-white py-6 rounded-[32px] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3">
-                  <Check size={20} /> Update Bean Info
+                <button 
+                  disabled={!editingBean.name}
+                  onClick={handleSave} 
+                  className="w-full bg-[#3C2A21] text-white py-6 rounded-[32px] font-black uppercase tracking-widest shadow-2xl active:scale-95 disabled:opacity-30 transition-all flex items-center justify-center gap-3"
+                >
+                  <Check size={20} /> {isAdding ? 'Register Bean' : 'Update Bean Info'}
                 </button>
               </div>
             </motion.div>
@@ -342,7 +346,7 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
                   <h3 className="serif text-2xl font-bold text-[#3C2A21]">{bean.name}</h3>
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button onClick={() => setEditingBean({...bean})} className="p-3 bg-[#F5F2ED] text-[#3C2A21]/40 rounded-full hover:bg-[#3C2A21] hover:text-white transition-all shadow-sm">
+                  <button onClick={() => { setIsAdding(false); setEditingBean({...bean}); }} className="p-3 bg-[#F5F2ED] text-[#3C2A21]/40 rounded-full hover:bg-[#3C2A21] hover:text-white transition-all shadow-sm">
                     <Edit3 size={18} />
                   </button>
                   <button onClick={() => setDeletingId(bean.id)} className="p-3 bg-[#F5F2ED] text-[#3C2A21]/40 rounded-full hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">
@@ -422,7 +426,7 @@ const Warehouse: React.FC<WarehouseProps> = ({ beans, onAddBean, onUpdateBean, o
                 className="bg-white p-3 pb-8 rounded-lg shadow-xl border border-[#E5E2DD] relative group flex flex-col items-center"
               >
                 <div className="absolute -top-3 right-0 left-0 flex justify-center gap-2 z-20">
-                  <button onClick={(e) => { e.stopPropagation(); setEditingBean({...bean}); }} className="w-8 h-8 bg-[#3C2A21] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-white"><Edit3 size={14} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setIsAdding(false); setEditingBean({...bean}); }} className="w-8 h-8 bg-[#3C2A21] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-white"><Edit3 size={14} /></button>
                   <button onClick={(e) => { e.stopPropagation(); setDeletingId(bean.id); }} className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-white"><Trash2 size={14} /></button>
                 </div>
 

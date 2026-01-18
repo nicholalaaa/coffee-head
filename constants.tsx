@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Brand } from './types';
 import { 
@@ -22,7 +21,7 @@ export const BRANDS: Brand[] = [
     name: 'Luckin', 
     color: '#003DA5', 
     textColor: '#FFFFFF', 
-    logo: 'assets/logos/luckin.png', 
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEUAADX/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD/PUD9x024AAAAEHRSTlMAEBf4v7+/v79/v3+/DwwNAnL3OQAAAHRJREFUeAHt10kSgCAMRNEpIiqI+590pAsYAnFr86uY9yoo0YmI1f8D0BfAtYAnYATwCdgIuAnYCbgJ2AnYCbgJ2Am4CdgJuAnYCbgJuAnYCdgJuAnYCbgJuAnYCVgD8AiYCngEtAIeAa2AR8BXQCvgEfAV0Ao6ALXvAm0fS0G6AAAAAElFTkSuQmCC', 
     bestSellers: [
       { name: 'Americano (标准美式)', baseCaffeine: 150, basePrice: 13 },
       { name: 'Latte (标准拿铁)', baseCaffeine: 130, basePrice: 16 },
@@ -37,7 +36,7 @@ export const BRANDS: Brand[] = [
     name: 'Starbucks', 
     color: '#00704A', 
     textColor: '#FFFFFF', 
-    logo: 'assets/logos/starbucks.png', 
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEUAByD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyD/IyDl8290AAAAEHRSTlMAEBf4v7+/v79/v3+/DwwNAnL3OQAAAHRJREFUeAHt10kSgCAMRNEpIiqI+590pAsYAnFr86uY9yoo0YmI1f8D0BfAtYAnYATwCdgIuAnYCbgJ2AnYCbgJ2Am4CdgJuAnYCbgJuAnYCdgJuAnYCbgJuAnYCVgD8AiYCngEtAIeAa2AR8BXQCvgEfAV0Ao6ALXvAm0fS0G6AAAAAElFTkSuQmCC', 
     bestSellers: [
       { name: 'Americano (标准美式)', baseCaffeine: 150, basePrice: 30 },
       { name: 'Latte (标准拿铁)', baseCaffeine: 150, basePrice: 33 },
@@ -52,7 +51,7 @@ export const BRANDS: Brand[] = [
     name: 'Arabica', 
     color: '#1A1A1A', 
     textColor: '#FFFFFF', 
-    logo: 'assets/logos/arabica.png', 
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEUAABf/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyA0Uj9AAAAAEHRSTlMAEBf4v7+/v79/v3+/DwwNAnL3OQAAAHRJREFUeAHt10kSgCAMRNEpIiqI+590pAsYAnFr86uY9yoo0YmI1f8D0BfAtYAnYATwCdgIuAnYCbgJ2AnYCbgJ2Am4CdgJuAnYCbgJuAnYCdgJuAnYCbgJuAnYCVgD8AiYCngEtAIeAa2AR8BXQCvgEfAV0Ao6ALXvAm0fS0G6AAAAAElFTkSuQmCC', 
     bestSellers: [
       { name: 'Americano (标准美式)', baseCaffeine: 160, basePrice: 35 },
       { name: 'Latte (标准拿铁)', baseCaffeine: 160, basePrice: 40 },
@@ -67,7 +66,7 @@ export const BRANDS: Brand[] = [
     name: 'Blue Bottle', 
     color: '#00A9E0', 
     textColor: '#FFFFFF', 
-    logo: 'assets/logos/bluebottle.png', 
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEUAqf//LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyC6pG77AAAAEHRSTlMAEBf4v7+/v79/v3+/DwwNAnL3OQAAAHRJREFUeAHt10kSgCAMRNEpIiqI+590pAsYAnFr86uY9yoo0YmI1f8D0BfAtYAnYATwCdgIuAnYCbgJ2AnYCbgJ2Am4CdgJuAnYCbgJuAnYCdgJuAnYCbgJuAnYCVgD8AiYCngEtAIeAa2AR8BXQCvgEfAV0Ao6ALXvAm0fS0G6AAAAAElFTkSuQmCC', 
     bestSellers: [
       { name: 'Americano (标准美式)', baseCaffeine: 150, basePrice: 38 },
       { name: 'Latte (标准拿铁)', baseCaffeine: 150, basePrice: 42 },
@@ -82,7 +81,7 @@ export const BRANDS: Brand[] = [
     name: "McDonald's", 
     color: '#FFBC0D', 
     textColor: '#000000', 
-    logo: 'assets/logos/mcdonalds.png', 
+    logo: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAANlBMVEUA+8D/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyD/LyAm9XzWAAAAEHRSTlMAEBf4v7+/v79/v3+/DwwNAnL3OQAAAHRJREFUeAHt10kSgCAMRNEpIiqI+590pAsYAnFr86uY9yoo0YmI1f8D0BfAtYAnYATwCdgIuAnYCbgJ2AnYCbgJ2Am4CdgJuAnYCbgJuAnYCdgJuAnYCbgJuAnYCVgD8AiYCngEtAIeAa2AR8BXQCvgEfAV0Ao6ALXvAm0fS0G6AAAAAElFTkSuQmCC', 
     bestSellers: [
       { name: 'Americano (标准美式)', baseCaffeine: 140, basePrice: 15 },
       { name: 'Latte (标准拿铁)', baseCaffeine: 140, basePrice: 19 },

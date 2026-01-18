@@ -1,27 +1,30 @@
-
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CoffeeLog, CoffeeBean } from '../types';
 import { BRANDS } from '../constants';
 import { BrandLogo } from './Tracker';
 import { 
-  Radar, 
-  RadarChart, 
-  PolarGrid, 
-  PolarAngleAxis, 
-  PolarRadiusAxis, 
-  ResponsiveContainer,
-  XAxis,
   BarChart,
   Bar,
-  Cell
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer
 } from 'recharts';
 import { 
   Share2, 
   Calendar,
   Coffee,
   Clock,
-  Quote
+  Quote,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  Banknote,
+  Zap,
+  Target,
+  Award
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -30,161 +33,174 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ logs, beans }) => {
-  const [selectedDay, setSelectedDay] = useState<number>(new Date().setHours(0,0,0,0));
+  // 1. Month Navigation Logic
+  const [viewDate, setViewDate] = useState(new Date());
+  
+  const nextMonth = () => {
+    const next = new Date(viewDate);
+    next.setMonth(next.getMonth() + 1);
+    if (next <= new Date()) setViewDate(next);
+  };
 
-  const calendarDays = useMemo(() => {
-    const days = [];
-    const today = new Date();
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      d.setHours(0,0,0,0);
-      days.push(d.getTime());
-    }
-    return days;
-  }, []);
+  const prevMonth = () => {
+    const prev = new Date(viewDate);
+    prev.setMonth(prev.getMonth() - 1);
+    setViewDate(prev);
+  };
 
-  const groupedLogs = useMemo(() => {
-    const groups: Record<number, CoffeeLog[]> = {};
-    logs.forEach(log => {
-      const dateKey = new Date(log.timestamp).setHours(0,0,0,0);
-      if (!groups[dateKey]) groups[dateKey] = [];
-      groups[dateKey].push(log);
+  const isCurrentMonth = viewDate.getMonth() === new Date().getMonth() && 
+                        viewDate.getFullYear() === new Date().getFullYear();
+
+  // 2. Filter logs for the selected month
+  const monthlyLogs = useMemo(() => {
+    return logs.filter(log => {
+      const d = new Date(log.timestamp);
+      return d.getMonth() === viewDate.getMonth() && d.getFullYear() === viewDate.getFullYear();
     });
-    return groups;
-  }, [logs]);
+  }, [logs, viewDate]);
 
-  const weeklyData = useMemo(() => {
-    return calendarDays.slice(-7).map(time => {
-      const count = (groupedLogs[time] || []).length;
-      return { 
-        day: new Date(time).toLocaleDateString([], { weekday: 'short' }), 
-        count 
-      };
+  // 3. Stats calculation
+  const stats = useMemo(() => {
+    const totalSpent = monthlyLogs.reduce((acc, l) => acc + l.price, 0);
+    const totalCaffeine = monthlyLogs.reduce((acc, l) => acc + l.caffeine, 0);
+    const coffeeCount = monthlyLogs.length;
+    
+    // Most frequent brand
+    const brandCounts: Record<string, number> = {};
+    monthlyLogs.forEach(l => {
+      if (l.brandId) brandCounts[l.brandId] = (brandCounts[l.brandId] || 0) + 1;
     });
-  }, [calendarDays, groupedLogs]);
+    const topBrandId = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const topBrand = BRANDS.find(b => b.id === topBrandId);
+
+    return { totalSpent, totalCaffeine, coffeeCount, topBrand };
+  }, [monthlyLogs]);
+
+  // 4. Daily average for the selected month
+  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const dailyData = useMemo(() => {
+    const data = Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, count: 0 }));
+    monthlyLogs.forEach(log => {
+      const day = new Date(log.timestamp).getDate();
+      data[day - 1].count += 1;
+    });
+    return data;
+  }, [monthlyLogs, daysInMonth]);
+
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   return (
     <div className="space-y-8 animate-in slide-in-from-right duration-500 pb-24">
+      {/* Header & Month Switcher */}
       <div className="flex justify-between items-center px-2">
-        <h2 className="serif text-2xl font-bold text-[#3C2A21]">Insight</h2>
-        <button className="bg-white p-3 rounded-full border border-[#E5E2DD] shadow-sm text-[#3C2A21]/40 hover:text-[#D4A373] transition-colors">
-          <Share2 size={20} />
-        </button>
+        <div>
+          <h2 className="serif text-2xl font-bold text-[#3C2A21]">Archive</h2>
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#D4A373]">Review your footprints</p>
+        </div>
+        <div className="flex items-center bg-white rounded-full p-1 border border-[#E5E2DD] shadow-sm">
+          <button onClick={prevMonth} className="p-2 hover:bg-[#F5F2ED] rounded-full transition-colors text-[#3C2A21]">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="px-4 text-[10px] font-black uppercase tracking-widest text-[#3C2A21]">
+            {viewDate.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' })}
+          </span>
+          <button 
+            onClick={nextMonth} 
+            disabled={isCurrentMonth}
+            className={`p-2 rounded-full transition-colors ${isCurrentMonth ? 'text-[#E5E2DD]' : 'hover:bg-[#F5F2ED] text-[#3C2A21]'}`}
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
 
-      {/* Coffee Streaks */}
-      <section className="bg-white rounded-[40px] p-6 shadow-xl border border-[#E5E2DD] mx-2 overflow-hidden">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/40">Coffee Streaks</span>
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#D4A373]">Past 14 Days</span>
+      {/* Monthly Summary Cards */}
+      <div className="grid grid-cols-2 gap-4 mx-2">
+        <div className="bg-[#3C2A21] text-white p-6 rounded-[32px] shadow-lg flex flex-col justify-between h-36">
+           <Banknote size={20} className="text-[#D4A373]" />
+           <div>
+              <p className="text-2xl font-black">¥{stats.totalSpent.toFixed(0)}</p>
+              <p className="text-[9px] font-bold uppercase opacity-40 tracking-widest">Total Spent</p>
+           </div>
         </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 px-2 scroll-smooth no-scrollbar">
-          {calendarDays.map(time => {
-            const date = new Date(time);
-            const isSelected = selectedDay === time;
-            const hasLogs = (groupedLogs[time] || []).length > 0;
-            return (
-              <button
-                key={time}
-                onClick={() => setSelectedDay(time)}
-                className={`flex-shrink-0 w-12 h-20 rounded-full flex flex-col items-center justify-center transition-all ${
-                  isSelected ? 'bg-[#3C2A21] text-white shadow-lg' : 'bg-[#F5F2ED] text-[#3C2A21]/40'
-                }`}
-              >
-                <span className="text-[8px] font-black uppercase mb-1">{date.toLocaleDateString([], { weekday: 'short' })}</span>
-                <span className="text-sm font-black mb-2">{date.getDate()}</span>
-                {hasLogs && (
-                  <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-[#D4A373]' : 'bg-[#D4A373]/60'}`} />
-                )}
-              </button>
-            );
-          })}
+        <div className="bg-white p-6 rounded-[32px] border border-[#E5E2DD] shadow-lg flex flex-col justify-between h-36">
+           <Zap size={20} className="text-[#D4A373]" />
+           <div>
+              <p className="text-2xl font-black text-[#3C2A21]">{stats.totalCaffeine}</p>
+              <p className="text-[9px] font-bold uppercase text-[#3C2A21]/30 tracking-widest">Total mg</p>
+           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Daily Logs Timeline */}
-      <section className="mx-2 space-y-4">
-        <div className="flex items-center gap-2 px-2">
-          <Clock size={18} className="text-[#D4A373]" />
-          <h3 className="serif text-xl font-bold text-[#3C2A21]">
-            {new Date(selectedDay).toLocaleDateString([], { month: 'short', day: 'numeric' })} Logs
-          </h3>
+      {/* Performance Card */}
+      <section className="bg-white rounded-[40px] p-8 shadow-xl border border-[#E5E2DD] mx-2 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 text-[#D4A373]/10">
+          <Award size={80} />
         </div>
-        
-        <div className="space-y-3">
-          <AnimatePresence mode="wait">
-            {(!groupedLogs[selectedDay] || groupedLogs[selectedDay].length === 0) ? (
-              <motion.div 
-                key="empty"
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }}
-                className="bg-white/40 border-2 border-dashed border-[#E5E2DD] rounded-[32px] p-12 text-center"
-              >
-                <Coffee size={32} className="mx-auto text-[#3C2A21]/10 mb-2" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#3C2A21]/20">No caffeine records for this day</p>
-              </motion.div>
-            ) : (
-              groupedLogs[selectedDay].map(log => {
-                const brand = BRANDS.find(b => b.id === log.brandId);
-                return (
-                  <motion.div
-                    key={log.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white p-6 rounded-[32px] shadow-sm border border-[#E5E2DD] flex flex-col gap-4 group hover:shadow-md transition-all"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <BrandLogo brand={brand} size="w-12 h-12" />
-                        <div>
-                          <span className="block font-black text-[#3C2A21] text-sm">{log.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[8px] font-bold text-[#D4A373] uppercase">{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span className="text-[8px] font-black text-[#3C2A21]/10">·</span>
-                            <span className="text-[8px] font-bold text-[#3C2A21]/40 uppercase">¥{log.price}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-black text-[#3C2A21]">{log.caffeine}</span>
-                        <span className="text-[8px] font-black text-[#D4A373] ml-1 uppercase">mg</span>
-                      </div>
-                    </div>
-                    {log.thoughts && (
-                      <div className="flex items-start gap-2 bg-[#F5F2ED] p-4 rounded-2xl border-l-4 border-[#D4A373]">
-                        <Quote size={12} className="text-[#D4A373] mt-1 shrink-0" />
-                        <p className="text-[12px] italic text-[#3C2A21]/60 leading-relaxed font-medium">{log.thoughts}</p>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-6">
+            <Target size={20} className="text-[#D4A373]" />
+            <h3 className="serif text-xl font-bold">Monthly Highlight</h3>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#F5F2ED] flex items-center justify-center text-[#3C2A21]">
+                <Coffee size={24} />
+              </div>
+              <div>
+                <span className="block text-2xl font-black text-[#3C2A21]">{stats.coffeeCount}</span>
+                <span className="text-[10px] font-bold uppercase text-[#3C2A21]/40 tracking-widest">Sips this month</span>
+              </div>
+            </div>
+
+            {stats.topBrand && (
+              <div className="flex items-center gap-4">
+                <BrandLogo brand={stats.topBrand} size="w-12 h-12" />
+                <div>
+                  <span className="block text-xl font-black text-[#3C2A21]">{stats.topBrand.name}</span>
+                  <span className="text-[10px] font-bold uppercase text-[#3C2A21]/40 tracking-widest">Most visited brand</span>
+                </div>
+              </div>
             )}
-          </AnimatePresence>
+          </div>
         </div>
       </section>
 
-      {/* Weekly Intensity Chart */}
+      {/* Heatmap/Bar chart of daily intake */}
       <section className="bg-white rounded-[40px] p-8 shadow-xl border border-[#E5E2DD] mx-2">
-        <h3 className="serif text-xl font-bold mb-6 flex items-center gap-2 text-[#3C2A21]">
-          <Calendar size={20} className="text-[#D4A373]" /> Weekly Intensity
-        </h3>
-        <div className="h-40">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="serif text-xl font-bold flex items-center gap-2 text-[#3C2A21]">
+            <Calendar size={20} className="text-[#D4A373]" /> Daily Intensity
+          </h3>
+          <span className="text-[10px] font-black text-[#3C2A21]/20 uppercase">Sips / Day</span>
+        </div>
+        <div className="h-48 -ml-4">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={weeklyData}>
+            <BarChart data={dailyData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#3C2A21" strokeOpacity={0.05} />
               <XAxis 
                 dataKey="day" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: 10, fontWeight: 'bold', fill: '#3C2A21', opacity: 0.4 }} 
+                tick={{ fontSize: 8, fontWeight: 'bold', fill: '#3C2A21', opacity: 0.2 }} 
+                interval={4}
               />
-              <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                {weeklyData.map((entry, index) => (
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 8, fontWeight: 'bold', fill: '#3C2A21', opacity: 0.2 }}
+                allowDecimals={false}
+                width={25}
+              />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {dailyData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={entry.count > 2 ? '#3C2A21' : '#D4A373'} 
-                    fillOpacity={entry.count === 0 ? 0.1 : 1}
+                    fill={entry.count > 0 ? '#3C2A21' : '#F5F2ED'} 
+                    fillOpacity={entry.count > 2 ? 1 : 0.6}
+                    onClick={() => setSelectedDay(entry.day)}
+                    className="cursor-pointer"
                   />
                 ))}
               </Bar>
@@ -192,6 +208,56 @@ const Dashboard: React.FC<DashboardProps> = ({ logs, beans }) => {
           </ResponsiveContainer>
         </div>
       </section>
+
+      {/* Selected Day Logs - Monthly context */}
+      <AnimatePresence>
+        {monthlyLogs.length > 0 && (
+          <section className="mx-2 space-y-4">
+            <div className="flex items-center gap-2 px-2">
+              <Clock size={18} className="text-[#D4A373]" />
+              <h3 className="serif text-xl font-bold text-[#3C2A21]">Full Log History</h3>
+            </div>
+            
+            <div className="space-y-3">
+              {monthlyLogs.map(log => {
+                const brand = BRANDS.find(b => b.id === log.brandId);
+                return (
+                  <motion.div
+                    key={log.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-white p-5 rounded-[28px] shadow-sm border border-[#E5E2DD] flex flex-col gap-3 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <BrandLogo brand={brand} size="w-10 h-10" />
+                        <div>
+                          <span className="block font-black text-[#3C2A21] text-xs">{log.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-bold text-[#D4A373] uppercase">
+                              {new Date(log.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })} · {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-black text-[#3C2A21]">¥{log.price}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </AnimatePresence>
+
+      {monthlyLogs.length === 0 && (
+        <div className="mx-2 p-12 bg-white/40 border-2 border-dashed border-[#E5E2DD] rounded-[40px] text-center">
+          <Coffee size={40} className="mx-auto text-[#3C2A21]/5 mb-4" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#3C2A21]/20">No data for this period</p>
+        </div>
+      )}
     </div>
   );
 };

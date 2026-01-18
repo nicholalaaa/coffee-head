@@ -1,6 +1,6 @@
 {
-  "name": "Coffee Head",
-  "short_name": "Coffee Head",
+  "name": "咖啡脑袋",
+  "short_name": "咖啡脑袋",
   "description": "Your aesthetic coffee companion.",
   "start_url": "/",
   "display": "standalone",
