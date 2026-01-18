@@ -1,8 +1,7 @@
-const CACHE_NAME = 'coffee-head-v2';
+const CACHE_NAME = 'coffee-head-v3';
 const ASSETS = [
   '/',
   '/index.html',
-  '/icon.svg',
   '/manifest.json'
 ];
 
