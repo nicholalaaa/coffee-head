@@ -1,6 +1,6 @@
 {
-  "name": "咖啡脑袋",
-  "short_name": "咖啡脑袋",
+  "name": "Coffee Head",
+  "short_name": "Coffee Head“,
   "description": "Your aesthetic coffee companion.",
   "start_url": "/",
   "display": "standalone",
@@ -11,12 +11,6 @@
       "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0BAMAAAD60974AAAALVBMVEUAAAA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiA8KiCofpY8AAAADnRSTlMAEX+AsJ+fsL9/v7+/f38NAnYAAAAJcEhZcwAADsQAAA7EAZVKw4bAAAB3elEQVR4Ae3S2XLCMAxA0Sbe/v+/XAmUAsV27InTOfOAnY6unS2S9InS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9EnS9AnS9EnS9EnSp86vOn8AnmEBf9vXm8AAAAAASUVORK5CYII=",
       "type": "image/png",
       "sizes": "180x180",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
       "purpose": "any"
     }
   ]
