@@ -1,20 +1,46 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Coffee Head
 
-# Run and deploy your AI Studio app
+Coffee Head is a local-first coffee tracking app built with React, TypeScript, and Vite. It helps you record coffee consumption, manage your bean inventory and budget, and review personal insights.
 
-This contains everything you need to run your app locally.
+Your data is stored locally in the browser using IndexedDB. The app does not require Gemini or any other AI service, and no API key is needed.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1sfNKe7PNniG-hmo-nlpt6M9vSd1rnx_N
+## Run locally
 
-## Run Locally
+### Prerequisites
 
-**Prerequisites:**  Node.js
+- Node.js
+- npm
 
+### Setup
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+3. Open the local URL shown in the terminal. By default, Vite uses `http://localhost:3000` for this project.
+
+## Build for production
+
+```bash
+npm run build
+```
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Data and privacy
+
+- App data is stored in the current browser through IndexedDB.
+- No account or cloud database is required.
+- You can export and import a JSON backup from within the app.
